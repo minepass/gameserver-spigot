@@ -1,0 +1,86 @@
+/*
+ *  This file is part of MinePass, licensed under the MIT License (MIT).
+ *
+ *  Copyright (c) MinePass.net <http://www.minepass.net>
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+loadBukkitConfiguration()
+
+def loadBukkitConfiguration() {
+    project.ext['bukkitEnv'] = hasProperty('env') ? env : 'development'
+    println "Bukkit Environment is set to ${project.bukkitEnv}"
+
+    project.ext.coreVersion = '1.0-SNAPSHOT'
+    println "Bukkit MP-Core Version is set to ${project.coreVersion}"
+
+    project.ext['bukkitVersion'] = hasProperty('bukkit') ? bukkit : '1.8-R0.1-SNAPSHOT'
+    println "Bukkit Version is set to ${project.bukkitVersion}"
+}
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+version = '0.18.1' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
+group = "net.minepass"
+archivesBaseName = "MinePass-Bukkit[1.8]"
+
+repositories {
+    mavenCentral()
+    maven { url "https://hub.spigotmc.org/nexus/content/groups/public/" }
+}
+
+configurations {
+    minepass_core
+    compile {
+        extendsFrom minepass_core
+    }
+}
+
+dependencies {
+    compile "org.bukkit:bukkit:${project.ext.bukkitVersion}"
+
+    if ( project.bukkitEnv == 'core_dev' ) {
+        minepass_core(project(":minepass_core")) {
+            transitive = true
+        }
+    } else if ( project.bukkitEnv == 'development' ) {
+        minepass_core group: 'net.minepass', name: 'minepass-gameserver', version: '1.0-SNAPSHOT', changing: true
+    } else if (project.bukkitEnv == 'production') {
+        minepass_core files("minepass-gameserver-${project.coreVersion}.jar")
+    }
+}
+
+processResources {
+    filter ReplaceTokens, tokens:[version: project.version]
+}
+
+task extractCore(type: Copy) {
+    from {  // use of closure defers evaluation until execution time
+        configurations.minepass_core.collect { zipTree(it) }
+    }
+    into "$buildDir/classes/main/"
+}
+
+classes.dependsOn extractCore
