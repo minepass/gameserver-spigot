@@ -31,6 +31,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class EventHandler implements Listener {
 
@@ -47,19 +50,36 @@ public class EventHandler implements Listener {
 
         if (player != null) {
             MPWorldServer server = plugin.getMinepass().getServer();
-            Integer minecraftGameMode;
+            GameMode minecraftGameMode = null;
+            Pattern privPattern = Pattern.compile("mc:(?<name>[a-z]+)");
 
-            // Determine mode.
-            switch (player.type) {
-                case "visitor":
-                    minecraftGameMode = server.lifecycle_visitor_mode;
-                    break;
-                default:
-                    minecraftGameMode = server.lifecycle_default_mode;
+            Matcher pm;
+            for (String p : player.privileges) {
+                pm = privPattern.matcher(p);
+                if (pm.find()) {
+                    switch (pm.group("name")) {
+                        case "survival":
+                            minecraftGameMode = GameMode.SURVIVAL;
+                            break;
+                        case "creative":
+                            minecraftGameMode = GameMode.CREATIVE;
+                            break;
+                        case "adventure":
+                            minecraftGameMode = GameMode.ADVENTURE;
+                            break;
+                        case "spectator":
+                            minecraftGameMode = GameMode.SPECTATOR;
+                            break;
+                    }
+                }
             }
 
-            if (minecraftGameMode > -1) {
-                bukkitPlayer.setGameMode(GameMode.getByValue(minecraftGameMode));
+            if (minecraftGameMode != null) {
+                if (!bukkitPlayer.getGameMode().equals(minecraftGameMode)) {
+                    bukkitPlayer.setGameMode(minecraftGameMode);
+                }
+            } else {
+                bukkitPlayer.kickPlayer("Your current MinePass does not permit access to this server.");
             }
         }
     }

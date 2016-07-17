@@ -25,8 +25,10 @@
 package net.minepass.gs.mc.bukkit;
 
 import net.minepass.api.gameserver.MPAsciiArt;
+import net.minepass.api.gameserver.MPConfig;
 import net.minepass.api.gameserver.MPConfigException;
 import net.minepass.api.gameserver.MPStartupException;
+import net.minepass.api.gameserver.MPUtil;
 import net.minepass.api.gameserver.MPWorldServerDetails;
 import net.minepass.api.gameserver.embed.solidtx.TxStack;
 import net.minepass.api.gameserver.embed.solidtx.TxSync;
@@ -57,15 +59,18 @@ public final class MP_BukkitPlugin extends JavaPlugin {
         getLogger().info("Loading MinePass configuration");
 
         Boolean debug = getConfig().getBoolean("debug_enabled");
-        String api_host = getConfig().getString("setup_api_host");
-        String server_uuid = getConfig().getString("setup_server_id");
-        String server_secret = getConfig().getString("setup_server_secret");
         String version = getPlugin(MP_BukkitPlugin.class).getDescription().getVersion();
 
         try {
             if (debug) {
                 TxStack.debug = true;
             }
+
+            MPConfig mtc = new MPConfig();
+            mtc.variant = "BukkitPlugin ".concat(version);
+            mtc.api_host = getConfig().getString("setup_api_host");
+            mtc.server_uuid = getConfig().getString("setup_server_id");
+            mtc.server_secret = getConfig().getString("setup_server_secret");
 
             /**
              * The MinePass network stack is built upon SolidTX, an MIT licensed project
@@ -78,13 +83,14 @@ public final class MP_BukkitPlugin extends JavaPlugin {
              *   https://github.com/org-binbab/solid-tx
              *
              */
-            this.minepass = new MinePassMC("BukkitPlugin ".concat(version), api_host, server_uuid, server_secret);
+            this.minepass = new MinePassMC(mtc);
             minepass.setContext(this);
 
             getLogger().info("MinePass Core Version: " + minepass.getVersion());
-            getLogger().info("MinePass API Endpoint: " + api_host);
+            getLogger().info("MinePass API Endpoint: " + mtc.api_host);
             getLogger().info("MinePass World Server UUID: " + minepass.getServerUUID());
         } catch (MPConfigException e) {
+            e.printStackTrace();
             for (String x : MPAsciiArt.getNotice("Configuration Update Required")) {
                 getLogger().info(x);
             }
@@ -121,7 +127,11 @@ public final class MP_BukkitPlugin extends JavaPlugin {
 
         // Send server details.
         MPWorldServerDetails details = new MPWorldServerDetails();
-        details.game_version = getServer().getVersion();
+        details.plugin_type = "mc-bukkit";
+        details.plugin_version = version;
+        details.game_realm = "mc";
+        details.game_version = MPUtil.parseVersion(getServer().getVersion());
+        details.game_version_raw = getServer().getVersion();
         for (Plugin p : getServer().getPluginManager().getPlugins()) {
             details.addPlugin(p.getName(), p.getDescription().getVersion(), p.getDescription().getMain());
         }

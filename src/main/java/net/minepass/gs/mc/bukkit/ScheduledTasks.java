@@ -27,6 +27,7 @@ package net.minepass.gs.mc.bukkit;
 import com.google.common.collect.ImmutableList;
 import net.minepass.gs.GameserverTasks;
 import net.minepass.gs.mc.MinePassMC;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -55,7 +56,7 @@ public class ScheduledTasks extends BukkitRunnable {
             }
 
             @Override
-            protected void updateAndReloadLocalWhitelist() {
+            protected void updateAndReloadLocalAuth() {
                 minepass.updateLocalWhitelist();
                 plugin.getServer().reloadWhitelist();
                 plugin.getLogger().info("Whitelist updated");
@@ -69,10 +70,12 @@ public class ScheduledTasks extends BukkitRunnable {
 
             @Override
             protected void warnPlayer(UUID playerId, String message) {
-                Player p = plugin.getServer().getPlayer(playerId);
+                Server s = plugin.getServer();
+                Player p = s.getPlayer(playerId);
                 if (p != null) {
-                    p.sendRawMessage(String.format(
-                            "[\"\",{\"text\":\"%s\",\"color\":\"gold\"}]",
+                    s.dispatchCommand(s.getConsoleSender(), String.format(
+                            "tellraw %s [\"\",{\"text\":\"%s\",\"color\":\"gold\"}]",
+                            p.getName(),
                             message
                     ));
                 }
@@ -80,10 +83,12 @@ public class ScheduledTasks extends BukkitRunnable {
 
             @Override
             protected void warnPlayerPass(UUID playerId, String message) {
-                Player p = plugin.getServer().getPlayer(playerId);
+                Server s = plugin.getServer();
+                Player p = s.getPlayer(playerId);
                 if (p != null) {
-                    p.sendRawMessage(String.format(
-                            "[\"\",{\"text\":\"%s\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"%s\"}}]",
+                    s.dispatchCommand(s.getConsoleSender(), String.format(
+                            "tellraw %s [\"\",{\"text\":\"%s\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"%s\"}}]",
+                            p.getName(),
                             message.concat(" Click for your World Pass."),
                             minepass.getServer().join_url
                     ));

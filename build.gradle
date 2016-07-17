@@ -24,27 +24,27 @@
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
-loadBukkitConfiguration()
+loadSpigotConfiguration()
 
-def loadBukkitConfiguration() {
-    project.ext['bukkitEnv'] = hasProperty('env') ? env : 'development'
-    println "Bukkit Environment is set to ${project.bukkitEnv}"
+def loadSpigotConfiguration() {
+    project.ext['spigotEnv'] = hasProperty('env') ? env : 'development'
+    println "Spigot Environment is set to ${project.spigotEnv}"
 
-    project.ext.coreVersion = '1.0-SNAPSHOT'
-    println "Bukkit MP-Core Version is set to ${project.coreVersion}"
+    project.ext.coreVersion = '2.0-SNAPSHOT'
+    println "Spigot MP-Core Version is set to ${project.coreVersion}"
 
-    project.ext['bukkitVersion'] = hasProperty('bukkit') ? bukkit : '1.8-R0.1-SNAPSHOT'
-    println "Bukkit Version is set to ${project.bukkitVersion}"
+    project.ext['spigotVersion'] = hasProperty('spigot') ? spigot : '1.8-R0.1-SNAPSHOT'
+    println "Spigot Version is set to ${project.spigotVersion}"
 }
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
-version = '0.18.1' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
+version = '0.18.42' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
 group = "net.minepass"
-archivesBaseName = "MinePass-Bukkit[1.8]"
+archivesBaseName = "MinePass-Spigot[1.8-1.10]"
 
 repositories {
     mavenCentral()
@@ -59,15 +59,15 @@ configurations {
 }
 
 dependencies {
-    compile "org.bukkit:bukkit:${project.ext.bukkitVersion}"
+    compile "org.bukkit:bukkit:${project.ext.spigotVersion}"
 
-    if ( project.bukkitEnv == 'core_dev' ) {
+    if ( project.spigotEnv == 'core_dev' ) {
         minepass_core(project(":minepass_core")) {
             transitive = true
         }
-    } else if ( project.bukkitEnv == 'development' ) {
-        minepass_core group: 'net.minepass', name: 'minepass-gameserver', version: '1.0-SNAPSHOT', changing: true
-    } else if (project.bukkitEnv == 'production') {
+    } else if ( project.spigotEnv == 'development' ) {
+        minepass_core group: 'net.minepass', name: 'minepass-gameserver', version: "${project.coreVersion}.jar", changing: true
+    } else if (project.spigotEnv == 'production') {
         minepass_core files("minepass-gameserver-${project.coreVersion}.jar")
     }
 }
@@ -84,3 +84,8 @@ task extractCore(type: Copy) {
 }
 
 classes.dependsOn extractCore
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.12'
+}
+
