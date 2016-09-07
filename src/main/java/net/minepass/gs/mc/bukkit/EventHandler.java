@@ -49,8 +49,8 @@ public class EventHandler implements Listener {
         MPPlayer player = plugin.getMinepass().getPlayer(bukkitPlayer.getUniqueId());
 
         if (player != null) {
-            MPWorldServer server = plugin.getMinepass().getServer();
             GameMode minecraftGameMode = null;
+            Boolean minecraftGameModeUseDefault = false;
             Pattern privPattern = Pattern.compile("mc:(?<name>[a-z]+)");
 
             Matcher pm;
@@ -58,6 +58,9 @@ public class EventHandler implements Listener {
                 pm = privPattern.matcher(p);
                 if (pm.find()) {
                     switch (pm.group("name")) {
+                        case "default":
+                            minecraftGameModeUseDefault = true;
+                            break;
                         case "survival":
                             minecraftGameMode = GameMode.SURVIVAL;
                             break;
@@ -78,7 +81,7 @@ public class EventHandler implements Listener {
                 if (!bukkitPlayer.getGameMode().equals(minecraftGameMode)) {
                     bukkitPlayer.setGameMode(minecraftGameMode);
                 }
-            } else {
+            } else if (!minecraftGameModeUseDefault) {
                 bukkitPlayer.kickPlayer("Your current MinePass does not permit access to this server.");
             }
         }

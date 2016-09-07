@@ -1,6 +1,6 @@
-# MinePass for Minecraft Bukkit/Spigot 1.8
+# MinePass for Minecraft Bukkit/Spigot
 
-This mod provides MinePass functionality to bukkit/spigot editions of Minecraft 1.8
+This mod provides MinePass functionality to bukkit/spigot editions of Minecraft
 
 ## Download and Installation
 
