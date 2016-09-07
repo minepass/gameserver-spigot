@@ -25,7 +25,6 @@
 package net.minepass.gs.mc.bukkit;
 
 import net.minepass.api.gameserver.MPPlayer;
-import net.minepass.api.gameserver.MPWorldServer;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -52,11 +51,13 @@ public class EventHandler implements Listener {
             GameMode minecraftGameMode = null;
             Boolean minecraftGameModeUseDefault = false;
             Pattern privPattern = Pattern.compile("mc:(?<name>[a-z]+)");
+            Pattern commandPattern = Pattern.compile("mc:/(?<command>.+)");
 
             Matcher pm;
             for (String p : player.privileges) {
-                pm = privPattern.matcher(p);
-                if (pm.find()) {
+                if ((pm = privPattern.matcher(p)).find()) {
+                    // Standard privileges.
+                    //
                     switch (pm.group("name")) {
                         case "default":
                             minecraftGameModeUseDefault = true;
@@ -74,6 +75,20 @@ public class EventHandler implements Listener {
                             minecraftGameMode = GameMode.SPECTATOR;
                             break;
                     }
+                } else if ((pm = commandPattern.matcher(p)).find()) {
+                    // Command privileges.
+                    //
+                    String command = pm.group("command");
+                    command = command.replaceAll("\\$name", player.name);
+                    command = command.replaceAll("\\$uuid", bukkitPlayer.getUniqueId().toString());
+                    final String runCommand = command;
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            plugin.getMinepass().log.debug("Sending login command: ".concat(runCommand), this);
+                            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), runCommand);
+                        }
+                    });
                 }
             }
 
