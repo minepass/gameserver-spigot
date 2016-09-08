@@ -89,7 +89,7 @@ public class ScheduledTasks extends BukkitRunnable {
                     s.dispatchCommand(s.getConsoleSender(), String.format(
                             "tellraw %s [\"\",{\"text\":\"%s\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"%s\"}}]",
                             p.getName(),
-                            message.concat(" Click for your World Pass."),
+                            message.concat(" Click to get your MinePass."),
                             minepass.getServer().join_url
                     ));
                 }
