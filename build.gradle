@@ -42,7 +42,7 @@ apply plugin: 'java'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '0.18.44' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
+version = '0.18.45' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
 group = "net.minepass"
 archivesBaseName = "MinePass-Spigot[1.8-1.10]"
 
