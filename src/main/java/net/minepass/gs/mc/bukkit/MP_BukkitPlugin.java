@@ -71,6 +71,7 @@ public final class MP_BukkitPlugin extends JavaPlugin {
             mtc.api_host = getConfig().getString("setup_api_host");
             mtc.server_uuid = getConfig().getString("setup_server_id");
             mtc.server_secret = getConfig().getString("setup_server_secret");
+            mtc.enforce_whitelist = getConfig().getBoolean("enforce_whitelist");
 
             /**
              * The MinePass network stack is built upon SolidTX, an MIT licensed project
@@ -106,9 +107,23 @@ public final class MP_BukkitPlugin extends JavaPlugin {
         // This is the post-start separation in Forge.
         // ----------------------------------------------------------------------------------------------------- //
 
-        getLogger().info("Requiring whitelist enabled.");
         getServer().reloadWhitelist();
-        getServer().setWhitelist(true);
+
+        // Whitelist mode.
+        if (minepass.getEnforceWhitelist()) {
+            getLogger().info("Requiring whitelist enabled");
+            getServer().setWhitelist(true);
+        } else {
+            getLogger().warning("|     .^.                                             .^.     |");
+            getLogger().warning("|    / ! \\            WHITELIST DISABLED             / ! \\    |");
+            getLogger().warning("|   '-----'                                         '-----'   |");
+            getLogger().warning("MinePass option [enforce_whitelist]=false");
+            getLogger().warning("This server will be OPEN to unregistered visitors.");
+            getLogger().warning("MinePass can only manage privileges of registered players.");
+            getLogger().warning("If you are trying to accommodate existing players,");
+            getLogger().warning("  consider using the Import/Bypass feature of the web-portal.");
+            getServer().setWhitelist(false);
+        }
 
         // Register event handler.
         getServer().getPluginManager().registerEvents(eventHandler, this);
