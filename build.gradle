@@ -27,7 +27,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 loadSpigotConfiguration()
 
 def loadSpigotConfiguration() {
-    project.ext['spigotEnv'] = hasProperty('env') ? env : 'development'
+    project.ext['spigotEnv'] = hasProperty('env') ? env : 'production'
     println "Spigot Environment is set to ${project.spigotEnv}"
 
     project.ext.coreVersion = '2.0-SNAPSHOT'
@@ -42,9 +42,9 @@ apply plugin: 'java'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '0.18.45' + "-" + (System.getenv("BUILD_NUMBER") ?: "SNAPSHOT")
+version = '0.18.46' + "-" + (System.getenv("TRAVIS_BUILD_NUMBER") ?: "SNAPSHOT")
 group = "net.minepass"
-archivesBaseName = "MinePass-Spigot[1.8-1.10]"
+archivesBaseName = "MinePass-Spigot[1.8-1.11]"
 
 repositories {
     mavenCentral()
@@ -61,12 +61,10 @@ configurations {
 dependencies {
     compile "org.bukkit:bukkit:${project.ext.spigotVersion}"
 
-    if ( project.spigotEnv == 'core_dev' ) {
+    if ( project.spigotEnv == 'development' ) {
         minepass_core(project(":minepass_core")) {
             transitive = true
         }
-    } else if ( project.spigotEnv == 'development' ) {
-        minepass_core group: 'net.minepass', name: 'minepass-gameserver', version: "${project.coreVersion}.jar", changing: true
     } else if (project.spigotEnv == 'production') {
         minepass_core files("minepass-gameserver-${project.coreVersion}.jar")
     }
