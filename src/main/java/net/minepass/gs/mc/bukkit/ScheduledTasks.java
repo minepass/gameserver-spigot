@@ -59,7 +59,7 @@ public class ScheduledTasks extends BukkitRunnable {
             protected void updateAndReloadLocalAuth() {
                 minepass.updateLocalWhitelist();
                 plugin.getServer().reloadWhitelist();
-                plugin.getLogger().info("Whitelist updated");
+                plugin.getLogger().info("MinePass Synchronized");
             }
 
             @Override
